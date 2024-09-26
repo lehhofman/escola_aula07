@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turmas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f3b059;
+            margin-bottom: 20px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #ffffff;
+        }
+
+        .turma-list {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #fff;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .turma-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .turma-item:last-child {
+            border-bottom: none;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-excluir {
+            background-color: #ff5722;
+            color: #fff;
+        }
+
+        .btn-visualizar {
+            background-color: #2196F3;
+            color: #fff;
+        }
+
+        .logout-btn {
+            background-color: #1a8ffc;
+            color: #fff;
+            border-radius: 5px;
+            width: 146px;
+            height: 50px;
+            margin-right: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .turma {
+            text-align: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid #2196F3;
+            width: 400px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: #2196F3;
+            margin-bottom: 20px;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0;
+        }
+
+        .modal-content input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            background-color: #ff5722;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #e64a19;
+        }
+
+        .turma-list h2 {
+            color: #2196F3;
+            margin: 0;
+        }
+
+        .turma-list {
+            width: 80%;
+        }
+
+        .logo {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .turma-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .turma-header div {
+            flex: 1;
+            text-align: center;
+        }
+
+        .turma-header div h3 {
+            margin: 0;
+        }
+
+        .turma-item div {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+        }
+
+        #cadastro-turma-btn {
+            background-color: #ff9409;
+            color: #fff;
+            padding: 20px 20px;
+            font-size: 15px;
+        }
+
+        #atividades-list {
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .atividade-item {
+            border-bottom: 1px solid #ccc;
+            padding: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="./img/logo.png" alt="Logo" class="logo">
+        <h1>Bem-vindo, <span id="professor-nome"></span>!</h1>
+        <button class="logout-btn" id="logout-btn">Sair</button>
+    </div>
+
+    <button id="cadastro-turma-btn">Cadastrar Turma</button>
+
+    <div class="turma-list" id="turma-list">
+        <div class="turma-header">
+            <div>
+                <h3>Número</h3>
+            </div>
+            <div>
+                <h3>Turma</h3>
+            </div>
+            <div>
+                <h3>Ação</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="turma-modal">
+        <div class="modal-content">
+            <h2 class="turma">Cadastrar Turma</h2>
+            <label for="nome">Nome da Turma:</label>
+            <input type="text" id="nome" required /><br>
+            <button id="salvar-turma-btn">Salvar</button>
+            <button id="cancelar-turma-btn">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="atividades-modal">
+        <div class="modal-content">
+            <h2>Atividades da Turma</h2>
+            <div id="atividades-list"></div>
+            <button id="fechar-atividades-btn">Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        const fetchProfessorNome = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/professores/1');
+                if (response.ok) {
+                    const professor = await response.json();
+                    document.getElementById('professor-nome').textContent = professor.nome;
+                } else {
+                    console.error('Erro ao buscar nome do professor:', response.statusText);
+                    document.getElementById('professor-nome').textContent = "Professor Exemplo";
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('professor-nome').textContent = "Professor Exemplo";
+            }
+        };
+
+        const fetchTurmas = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/turmas');
+                if (response.ok) {
+                    const turmas = await response.json();
+                    const turmaListDiv = document.getElementById('turma-list');
+                    turmaListDiv.innerHTML = `<div class="turma-header">
+                                                  <div><h3>Número</h3></div>
+                                                  <div><h3>Turma</h3></div>
+                                                  <div><h3>Ação</h3></div>
+                                              </div>`;
+
+                    turmas.forEach(turma => {
+                        const turmaItem = document.createElement('div');
+                        turmaItem.className = 'turma-item';
+                        turmaItem.innerHTML = `
+                            <div>${turma.id}</div>
+                            <div>${turma.nome}</div>
+                            <div>
+                                <button class="btn-visualizar" onclick="visualizarTurma(${turma.id})">Visualizar</button>
+                                <button class="btn-excluir" onclick="excluirTurma(${turma.id})">Excluir</button>
+                            </div>
+                        `;
+                        turmaListDiv.appendChild(turmaItem);
+                    });
+                } else {
+                    console.error('Erro ao buscar turmas:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        };
+        const visualizarTurma = async (id) => {
+    try {
+        const response = await fetch(`http://localhost:3000/api/turmas/${id}/atividades`); // Corrigido
+        if (response.ok) {
+            const atividades = await response.json();
+            const atividadesListDiv = document.getElementById('atividades-list');
+            atividadesListDiv.innerHTML = ''; 
+
+            if (atividades.length === 0) {
+                atividadesListDiv.innerHTML = '<div class="atividade-item">Nenhuma atividade encontrada.</div>';
+            } else {
+                atividades.forEach(atividade => {
+                    const atividadeItem = document.createElement('div');
+                    atividadeItem.className = 'atividade-item';
+                    atividadeItem.textContent = atividade.descricao; 
+                    atividadesListDiv.appendChild(atividadeItem);
+                });
+            }
+
+            // Mostra o modal
+            document.getElementById('atividades-modal').style.display = 'flex';
+        } else {
+            console.error('Erro ao buscar atividades:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+};
+
+        const excluirTurma = async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/turmas/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    fetchTurmas(); 
+                } else {
+                    console.error('Erro ao excluir turma:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        };
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            alert("Logout realizado com sucesso!");
+        });
+
+        document.getElementById('cadastro-turma-btn').addEventListener('click', () => {
+            document.getElementById('turma-modal').style.display = 'flex';
+        });
+
+        document.getElementById('cancelar-turma-btn').addEventListener('click', () => {
+            document.getElementById('turma-modal').style.display = 'none';
+        });
+
+        document.getElementById('salvar-turma-btn').addEventListener('click', async () => {
+            const nome = document.getElementById('nome').value;
+            if (!nome) {
+                alert('O nome da turma é obrigatório.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/turmas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nome }),
+                });
+
+                if (response.ok) {
+                    fetchTurmas(); 
+                    document.getElementById('turma-modal').style.display = 'none';
+                    document.getElementById('nome').value = ''; 
+                } else {
+                    console.error('Erro ao cadastrar turma:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        });
+
+        document.getElementById('fechar-atividades-btn').addEventListener('click', () => {
+            document.getElementById('atividades-modal').style.display = 'none';
+        });
+
+        fetchProfessorNome();
+        fetchTurmas();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #e3f2fd; 
+            font-family: Arial, sans-serif;
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #ff5722;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #e64a19;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="./img/logo.png" alt="Logo" class="logo" width="150">
+    <h2>Faça seu Login</h2>
+    <div class="error" id="error-message"></div>
+    <form id="login-form">
+        <input type="email" id="email" placeholder="E-mail" required>
+        <input type="password" id="senha" placeholder="Senha" required>
+        
+        <button type="submit">Entrar</button>
+    </form>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const errorMessage = document.getElementById('error-message');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, senha }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(data);
+                    window.location.href = 'turmas.html';
+                } else {
+                    const errorData = await response.json();
+                    errorMessage.textContent = errorData.message;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                errorMessage.textContent = 'Ocorreu um erro ao realizar o login.';
+            }
+        });
+    </script>
+</body>
+
+</html>
