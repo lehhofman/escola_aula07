@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const Professor = require('./controllers/professor');
@@ -23,6 +22,7 @@ router.put('/atividades/:id', Atividade.updateAtividade);
 router.delete('/atividades/:id', Atividade.deleteAtividade);
 
 router.get('/turmas/:id/atividades', async (req, res) => {
+
     const { id } = req.params;
     try {
         const atividades = await prisma.atividade.findMany({
@@ -31,7 +31,7 @@ router.get('/turmas/:id/atividades', async (req, res) => {
         });
         res.json(atividades); 
     } catch (error) {
-        res.status(500).json({ message: error.message }); // Trata erros
+        res.status(500).json({ message: error.message }); 
     }
 });
 

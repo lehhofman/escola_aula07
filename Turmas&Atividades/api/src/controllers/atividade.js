@@ -23,9 +23,11 @@ const createAtividade = async (req, res) => {
 
 const readAtividade = async (req, res) => {
     try {
-        if (req.params.id) {
+        const { id } = req.params;
+
+        if (id) {
             const atividade = await prisma.atividade.findUnique({
-                where: { id: parseInt(req.params.id, 10) },
+                where: { id: parseInt(id, 10) },
                 include: { turma: true } 
             });
             if (atividade) {
@@ -34,7 +36,11 @@ const readAtividade = async (req, res) => {
                 return res.status(404).json({ message: "Atividade não encontrada." });
             }
         } else {
+            const { turmaId } = req.query;
             const atividades = await prisma.atividade.findMany({
+                where: {
+                    turmaId: turmaId ? parseInt(turmaId, 10) : undefined 
+                },
                 include: { turma: true } 
             });
             return res.json(atividades);
@@ -43,6 +49,7 @@ const readAtividade = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
 const updateAtividade = async (req, res) => {
     const { id } = req.params;
     try {
